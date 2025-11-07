@@ -1,0 +1,11 @@
+{
+  "version": "2.0",
+  "extensions": {
+    "eventHubs": {
+      "batchOptions": {
+        "maxBatchSize": 200,
+        "prefetchCount": 1000
+      }
+    }
+  }
+}

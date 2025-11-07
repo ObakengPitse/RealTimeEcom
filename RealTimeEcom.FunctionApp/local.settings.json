@@ -1,0 +1,12 @@
+{
+    "IsEncrypted": false,
+    "Values": {
+        "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+        "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+        "OrdersEventHub__Connection": "<EventHub-Listen-ConnectionString>",
+        "OrdersEventHub__Name": "systemOrders",
+        "Sql__ConnectionString": "Server=tcp:obakeng-server.database.windows.net,1433;Initial Catalog=St10465727;Encrypt=True;User ID=admin1;Password=#Admin@123;"
+    }
+}
+
+

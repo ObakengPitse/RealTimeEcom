@@ -1,0 +1,155 @@
+﻿@{
+    ViewData["Title"] = "Real-Time Order Demo";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Azure Real-Time Order Processing</title>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h1 class="display-5 fw-bold">Azure Real-Time Order Processing</h1>
+            <p class="lead text-muted">Submit an order to Azure Event Hubs in real-time</p>
+        </div>
+
+        <!-- Order Form -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Create New Order</h5>
+            </div>
+            <div class="card-body">
+                <form id="orderForm">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="fullName" placeholder="Enter full name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" placeholder="Enter email address" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="phone" placeholder="Enter phone number" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Payment Method</label>
+                            <select id="paymentMethod" class="form-select">
+                                <option value="card">Card</option>
+                                <option value="cash">Cash</option>
+                                <option value="eft">EFT</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Order Items -->
+                    <h6 class="mb-3">Order Items</h6>
+                    <div id="itemsContainer">
+                        <div class="row g-3 item-row mb-2">
+                            <div class="col-md-4">
+                                <input type="text" class="form-control item-name" placeholder="Item name" required>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="number" class="form-control item-qty" placeholder="Qty" min="1" value="1" required>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="number" class="form-control item-price" placeholder="Price (R)" step="0.01" required>
+                            </div>
+                            <div class="col-md-3 d-grid">
+                                <button type="button" class="btn btn-danger remove-item">Remove</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" id="addItemBtn" class="btn btn-outline-secondary mb-3">
+                        + Add Another Item
+                    </button>
+
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary btn-lg">Send Order</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS -->
+    <script>
+        document.getElementById("addItemBtn").addEventListener("click", () => {
+          const container = document.getElementById("itemsContainer");
+          const newRow = document.createElement("div");
+          newRow.classList.add("row", "g-3", "item-row", "mb-2");
+          newRow.innerHTML = `
+            <div class="col-md-4">
+              <input type="text" class="form-control item-name" placeholder="Item name" required>
+            </div>
+            <div class="col-md-2">
+              <input type="number" class="form-control item-qty" placeholder="Qty" min="1" value="1" required>
+            </div>
+            <div class="col-md-3">
+              <input type="number" class="form-control item-price" placeholder="Price (R)" step="0.01" required>
+            </div>
+            <div class="col-md-3 d-grid">
+              <button type="button" class="btn btn-danger remove-item">Remove</button>
+            </div>`;
+          container.appendChild(newRow);
+        });
+
+        // Remove item rows
+        document.addEventListener("click", (e) => {
+          if (e.target.classList.contains("remove-item")) {
+            e.target.closest(".item-row").remove();
+          }
+        });
+
+        // Handle form submit
+        document.getElementById("orderForm").addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const items = [];
+          document.querySelectorAll(".item-row").forEach((row, index) => {
+            const name = row.querySelector(".item-name").value;
+            const qty = parseInt(row.querySelector(".item-qty").value);
+            const price = parseFloat(row.querySelector(".item-price").value);
+            if (name && qty > 0 && price > 0)
+              items.push({ id: index + 1, name, qty, price });
+          });
+
+          const total = items.reduce((sum, i) => sum + i.qty * i.price, 0);
+
+          const order = {
+            fullName: document.getElementById("fullName").value,
+            email: document.getElementById("email").value,
+            phone: document.getElementById("phone").value,
+            paymentMethod: document.getElementById("paymentMethod").value,
+            total: total,
+            items: items
+          };
+
+          try {
+            const res = await fetch('/Orders/Create', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(order)
+            });
+            if (!res.ok) throw new Error("Failed to send order");
+            const result = await res.json();
+            alert("✅ Order sent successfully!\nOrder ID: " + result.id);
+            document.getElementById("orderForm").reset();
+            document.getElementById("itemsContainer").innerHTML = "";
+          } catch (err) {
+            alert("❌ " + err.message);
+          }
+        });
+    </script>
+</body>
+</html>
+
