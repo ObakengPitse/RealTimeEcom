@@ -4,10 +4,16 @@
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.16.0" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.16.0" OutputItemType="Analyzer" />
-    <PackageReference Include="Azure.Messaging.EventHubs" Version="5.12.0" />
+    <!-- Core isolated worker runtime -->
+    <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.17.4" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.17.4" OutputItemType="Analyzer" />
+    
+    <!-- Event Hubs binding -->
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.EventHubs" Version="6.3.0" />
+
+    <!-- SQL client -->
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.0" />
   </ItemGroup>
 </Project>

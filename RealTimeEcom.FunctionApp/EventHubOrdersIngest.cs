@@ -1,10 +1,13 @@
-using System.Data;
-using System.Text.Json;
 using Azure.Messaging.EventHubs;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 public class EventHubOrdersIngest
 {
@@ -17,12 +20,19 @@ public class EventHubOrdersIngest
         _log = lf.CreateLogger<EventHubOrdersIngest>();
     }
 
+    public EventHubOrdersIngest(ILogger<EventHubOrdersIngest> log)
+    {
+        _log = log;
+        _sql = Environment.GetEnvironmentVariable("SqlConnectionString")!;
+    }
+
     [Function("OrdersIngest")]
     public async Task Run(
         [EventHubTrigger("%OrdersEventHub__Name%", Connection = "OrdersEventHub__Connection", IsBatched = true)]
         EventData[] events)
     {
         if (events.Length == 0) return;
+
         using var conn = new SqlConnection(_sql);
         await conn.OpenAsync();
         using var tx = await conn.BeginTransactionAsync();
